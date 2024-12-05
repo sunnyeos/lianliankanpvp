@@ -1,6 +1,16 @@
-const express = require('express');
+const path = require("path");
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const { init: initDB, Counter } = require("./db");
+
+const logger = morgan("tiny");
 const app = express();
 
+app.use(express.urlencoded({ extended: false }));
+
+app.use(cors());
+app.use(logger);
 // 解析 JSON 请求体
 app.use(express.json());
 
@@ -172,7 +182,13 @@ function handlePlayerDisconnect(ws) {
 }
 
 // 启动服务器
-const PORT = process.env.PORT || 80;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-}); 
+const port = process.env.PORT || 80;
+
+async function bootstrap() {
+  await initDB();
+  app.listen(port, () => {
+    console.log("启动成功", port);
+  });
+}
+
+bootstrap();
